@@ -448,7 +448,7 @@ class Predictor(BasePredictor):
             description="Upload dataset zip, zip should contain `dataset/<rvc_name>/split_<i>.wav`"
         ),
         sample_rate: str = Input(
-            description="Sample rate", default="48k", choices=["40k", "48k"]
+            description="Sample rate", default="48k", choices=["32k", 40k", "48k"]
         ),
         version: str = Input(description="Version", default="v2", choices=["v1", "v2"]),
         f0method: str = Input(
@@ -467,11 +467,11 @@ class Predictor(BasePredictor):
 
         # Create Model Folder
         model_name = infer_folder_name("dataset")
-        sample_rate = "40000" if sample_rate == "40k" else "48000"
+        sample_rate_map = {"32k": "32000", "40k": "40000", "48k": "48000"}
+        sample_rate = sample_rate_map.get(sample_rate, "48000")
         dataset = "dataset/" + model_name
         exp_dir = model_name
-        ksample_rate = "48k"
-        ksample_rate = "40k" if sample_rate == "40000" else "48k"
+        ksample_rate = "32k" if sample_rate == "32000" else "40k" if sample_rate == "40000" else "48k"
         save_frequency = 50
         cache_gpu = True
 
@@ -507,18 +507,14 @@ class Predictor(BasePredictor):
         # Train Model
         pretrained_paths = {
             "v1": {
+                "32k": ("assets/pretrained/f0G32k.pth", "assets/pretrained/f0D32k.pth"),
                 "40k": ("assets/pretrained/f0G40k.pth", "assets/pretrained/f0D40k.pth"),
                 "48k": ("assets/pretrained/f0G48k.pth", "assets/pretrained/f0D48k.pth"),
             },
             "v2": {
-                "40k": (
-                    "assets/pretrained_v2/f0G40k.pth",
-                    "assets/pretrained_v2/f0D40k.pth",
-                ),
-                "48k": (
-                    "assets/pretrained_v2/f0G48k.pth",
-                    "assets/pretrained_v2/f0D48k.pth",
-                ),
+                "32k": ("assets/pretrained_v2/f0G32k.pth", "assets/pretrained_v2/f0D32k.pth"),
+                "40k": ("assets/pretrained_v2/f0G40k.pth", "assets/pretrained_v2/f0D40k.pth"),
+                "48k": ("assets/pretrained_v2/f0G48k.pth", "assets/pretrained_v2/f0D48k.pth"),
             },
         }
         G_path, D_path = pretrained_paths[version][ksample_rate]
